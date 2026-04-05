@@ -1,1 +1,50 @@
 
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/your-repo/app.git'
+            }
+        }
+
+        stage('SAST - SonarQube') {
+            steps {
+                sh 'sonar-scanner'
+            }
+        }
+
+        stage('SCA - Dependency Check') {
+            steps {
+                sh 'dependency-check.sh --project myapp --scan .'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t myapp:latest .'
+            }
+        }
+
+        stage('Docker Image Scan - Trivy') {
+            steps {
+                sh 'trivy image myapp:latest'
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh 'docker tag myapp repo/myapp:latest'
+                sh 'docker push repo/myapp:latest'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f deployment.yaml'
+            }
+        }
+    }
+}
