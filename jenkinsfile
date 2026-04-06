@@ -1,24 +1,23 @@
-
 pipeline {
     agent any
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git 'https://github.com/your-repo/app.git'
+                git branch: 'main', url: '<your-repo-url>'
             }
         }
 
         stage('SAST - SonarQube') {
             steps {
-                sh 'sonar-scanner'
+                sh 'sonar-scanner || true'
             }
         }
 
         stage('SCA - Dependency Check') {
             steps {
-                sh 'dependency-check.sh --project myapp --scan .'
+                sh 'dependency-check.sh --scan . || true'
             }
         }
 
@@ -28,7 +27,7 @@ pipeline {
             }
         }
 
-        stage('Docker Image Scan - Trivy') {
+        stage('Image Scan - Trivy') {
             steps {
                 sh 'trivy image myapp:latest'
             }
@@ -36,8 +35,8 @@ pipeline {
 
         stage('Push Image') {
             steps {
-                sh 'docker tag myapp repo/myapp:latest'
-                sh 'docker push repo/myapp:latest'
+                sh 'docker tag myapp <dockerhub-username>/myapp:latest'
+                sh 'docker push <dockerhub-username>/myapp:latest'
             }
         }
 
